@@ -1,5 +1,29 @@
 const form = document.getElementById("generate-form");
 const qr = document.getElementById("qrcode");
+const domain = document.getElementById("domain");
+
+import UAuth from '@uauth/js';
+
+const uauth = new UAuth({
+    clientID: "f2fd2105-78da-43d3-8c45-7566a5c7fdc0",
+    redirectUri: "https://udqrcodegenerator.netlify.app/",
+    scope: "openid wallet"
+});
+
+async function login(){
+    try {
+        const login = document.getElementById("login");
+        login.className = "hidden";
+
+        const authorization = await uauth.loginWithPopup();
+        console.log(authorization);
+        domain.innerHTML =authorization.idToken.sub;
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+document.getElementById("login").onclick = login;
 
 const onGenerateSubmit = (e) => {
     // Prevent the default behavior because it is a form submission
@@ -8,18 +32,18 @@ const onGenerateSubmit = (e) => {
     // Remove old QR Code
     clearUI();
 
-    const url = document.getElementById("url").value;
+    const name = domain.innerHTML;
     const size = document.getElementById("size").value;
     
-    if (url === "") {
-        alert("Please enter a URL");
+    if (name === "") {
+        alert("Please Login");
     } else {
-        console.log(url, size);
+        console.log(name, size);
         showSpinner();
         
         setTimeout(() => {
             hideSpinner();
-            generateQRCode(url, size);
+            generateQRCode(name, size);
 
             // QR Code take time to be created
             setTimeout(() => {
@@ -30,10 +54,10 @@ const onGenerateSubmit = (e) => {
     }
 }
 
-const generateQRCode = (url, size) => {
+const generateQRCode = (name, size) => {
     // First parameter takes in ID
     const qrcode = new QRCode("qrcode", {
-        text: url,
+        text: name,
         width: size,
         height: size
     })
